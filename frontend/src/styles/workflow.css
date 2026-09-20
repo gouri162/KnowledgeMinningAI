@@ -1,0 +1,374 @@
+/* ── RIGHT WORKFLOW & CONTEXT PANEL ── */
+.workflow-workspace-panel {
+  width: var(--workflow-width);
+  min-width: var(--workflow-width);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow-y: auto;
+  padding-bottom: 1rem;
+}
+
+/* ── WIDGET 1: WORKFLOW EXECUTION ── */
+.workflow-card-container {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.workflow-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.workflow-main-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.wf-view-details-link {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--color-brand-blue);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.wf-view-details-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* Vertical DAG Pipeline */
+.dag-flow-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0.25rem 0;
+}
+
+.dag-node-item {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease;
+}
+
+.dag-node-item:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.dag-node-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.dag-node-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.dag-node-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.dag-node-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dag-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #A7F3D0;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.dag-step-duration {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  min-width: 26px;
+  text-align: right;
+}
+
+.dag-connector-arrow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 14px;
+  color: #94A3B8;
+  font-size: 0.7rem;
+}
+
+/* ── WIDGET 2: REFERENCED DOCUMENTS ── */
+.referenced-docs-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.referenced-docs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.referenced-main-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.ref-view-all-link {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--color-brand-blue);
+  text-decoration: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.ref-view-all-link:hover {
+  text-decoration: underline;
+}
+
+.referenced-docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.referenced-doc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius-md);
+  background: #FFFFFF;
+  transition: all 0.15s ease;
+}
+
+.referenced-doc-row:hover {
+  border-color: #CBD5E1;
+  background: var(--color-bg-subtle);
+}
+
+.ref-doc-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  overflow: hidden;
+  flex: 1;
+}
+
+.pdf-icon-badge {
+  width: 32px;
+  height: 32px;
+  background: #EF4444;
+  color: #FFFFFF;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.25);
+}
+
+.ref-doc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  overflow: hidden;
+}
+
+.ref-doc-filename {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ref-doc-usage {
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+}
+
+.ref-open-link {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-brand-blue);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ref-open-link:hover {
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+}
+
+/* KB Status Card */
+.kb-status-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.kb-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kb-status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 3px #D1FAE5;
+  animation: pulseGreen 2s infinite;
+}
+
+@keyframes pulseGreen {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.kb-status-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: #F8FAFC;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid #F1F5F9;
+}
+
+.kb-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+}
+
+.kb-detail-label {
+  color: var(--color-text-muted);
+}
+
+.kb-detail-val {
+  font-weight: 600;
+  color: var(--color-text-main);
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.7rem;
+}
+
+
+/* ── WIDGET 3: QUOTE CARD (Better questions lead to brighter solutions) ── */
+.quote-widget-card {
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border: 1px solid #BFDBFE;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.25rem 0.75rem 1.25rem;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.05);
+}
+
+.quote-lightbulb-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: var(--color-brand-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.quote-widget-text {
+  font-size: 0.86rem;
+  font-weight: 600;
+  font-style: italic;
+  color: #1E3A8A;
+  line-height: 1.4;
+  z-index: 2;
+}
+
+.quote-wave-bg {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 130px;
+  height: 45px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+
