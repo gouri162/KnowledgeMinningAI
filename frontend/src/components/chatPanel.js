@@ -40,7 +40,7 @@ export function renderChatPanel(messages, isStreaming = false) {
             <h1 class="greeting-hero-heading">Hello! This is ConsultAI, how can I help you?</h1>
           </div>
         ` : `
-          ${messages.map((msg, idx) => renderMessageRow(msg, idx)).join('')}
+          ${messages.filter(msg => !msg.isGreeting).map((msg, idx) => renderMessageRow(msg, idx)).join('')}
         `}
 
         ${isStreaming ? `
@@ -126,18 +126,9 @@ function renderMessageRow(msg, idx) {
     `;
   }
 
-  // If greeting message row in existing conversation
+  // If initial greeting placeholder, do not render inside active conversation
   if (msg.isGreeting) {
-    return `
-      <div class="greeting-message-row">
-        <div class="greeting-ai-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
-          </svg>
-        </div>
-        <p class="greeting-simple-text">Hello! This is ConsultAI, how can I help you?</p>
-      </div>
-    `;
+    return '';
   }
 
   // Regular assistant message
