@@ -185,16 +185,63 @@
 }
 
 .assistant-msg-avatar {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%);
-  color: #fff;
+  padding: 1px;
+  background: linear-gradient(135deg, #06b6d4 0%, #6366f1 50%, #a855f7 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 10px rgba(167, 139, 250, 0.4);
+  box-shadow: 0 3px 12px rgba(99, 102, 241, 0.35);
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.assistant-msg-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.robot-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.robot-hero-img-wrap {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, #06b6d4 0%, #6366f1 50%, #d946ef 100%);
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: heroRobotFloat 3.5s ease-in-out infinite alternate;
+}
+
+.robot-hero-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+@keyframes heroRobotFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-7px); }
+}
+
+.robot-avatar-svg {
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
 }
 
 .assistant-msg-content-wrap {
@@ -725,3 +772,402 @@
   0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
   40% { transform: translateY(-6px); opacity: 1; }
 }
+
+/* ── 3D MOTION ROBOT MODEL STYLING & KEYFRAME ANIMATIONS ── */
+.motion-robot-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: var(--robot-size, 38px);
+  height: var(--robot-size, 38px);
+  flex-shrink: 0;
+  perspective: 500px;
+}
+
+.robot-neon-halo {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #06b6d4, #6366f1, #d946ef, #06b6d4);
+  filter: blur(4px);
+  opacity: 0.75;
+  animation: haloRotate 4s linear infinite;
+  z-index: 0;
+}
+
+@keyframes haloRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.robot-3d-figure {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 4px 10px rgba(79, 70, 229, 0.45));
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.motion-robot-container:hover .robot-3d-figure {
+  transform: perspective(400px) rotateY(15deg) rotateX(-8deg) scale(1.1);
+}
+
+/* Continuous 3D Floating Motion */
+.robot-bobbing-body {
+  animation: robotFloatMotion 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes robotFloatMotion {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-7px); }
+}
+
+/* Ground shadow breathing with float */
+.robot-ground-shadow {
+  animation: shadowPulseMotion 2.8s ease-in-out infinite alternate;
+  transform-origin: 60px 122px;
+}
+
+@keyframes shadowPulseMotion {
+  0% { transform: scale(1); opacity: 0.35; }
+  100% { transform: scale(0.65); opacity: 0.15; }
+}
+
+/* Active 3D Friendly Waving Arm Motion */
+.robot-waving-arm-group {
+  transform-origin: 89px 74px;
+  animation: robotWaveMotion 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes robotWaveMotion {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-22deg); }
+  50% { transform: rotate(8deg); }
+  75% { transform: rotate(-18deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Digital LED Blinking Eyes */
+.robot-digital-eyes {
+  transform-origin: 60px 38px;
+  animation: robotBlinkMotion 3.8s ease-in-out infinite;
+}
+
+@keyframes robotBlinkMotion {
+  0%, 94%, 100% { transform: scaleY(1); }
+  96%, 98% { transform: scaleY(0.12); }
+}
+
+/* AI Core Reactor Pulsing */
+.robot-reactor-core {
+  animation: reactorPulseMotion 2s ease-in-out infinite alternate;
+}
+
+@keyframes reactorPulseMotion {
+  0% { opacity: 0.7; filter: drop-shadow(0 0 2px #06b6d4); }
+  100% { opacity: 1; filter: drop-shadow(0 0 6px #22d3ee); }
+}
+
+/* Antenna Beacon Flash */
+.robot-beacon-light {
+  animation: beaconPulseMotion 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes beaconPulseMotion {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; filter: drop-shadow(0 0 5px #22d3ee); }
+}
+
+/* Hero size styling */
+.hero-robot-container {
+  width: 96px;
+  height: 96px;
+}
+
+.hero-robot-container .robot-neon-halo {
+  inset: -6px;
+  filter: blur(8px);
+  opacity: 0.85;
+}
+
+/* ── DIRECT WORKFLOW IMAGE CARD FORMAT ── */
+.workflow-image-card {
+  margin: 1.25rem 0;
+  background: #ffffff;
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.workflow-image-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.14);
+}
+
+.workflow-image-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1.1rem;
+  background: linear-gradient(90deg, #f8fafc 0%, #eef2ff 100%);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.14);
+  gap: 0.75rem;
+}
+
+.workflow-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #312e81;
+}
+
+.workflow-header-title svg {
+  color: #6366f1;
+}
+
+.workflow-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-workflow-action {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  color: #4338ca;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.btn-workflow-action:hover {
+  background: #6366f1;
+  color: #ffffff;
+  border-color: #6366f1;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.28);
+}
+
+.workflow-img-container {
+  padding: 1.5rem 1.25rem;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+}
+
+.workflow-image-element {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  cursor: zoom-in;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.workflow-image-element:hover {
+  transform: scale(1.01);
+  box-shadow: 0 6px 22px rgba(99, 102, 241, 0.12);
+}
+
+.workflow-generating-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: #6366f1;
+  padding: 2.5rem;
+}
+
+.workflow-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(99, 102, 241, 0.25);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Lightbox Fullscreen Modal */
+.workflow-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.workflow-lightbox-overlay.active {
+  display: flex;
+}
+
+.workflow-lightbox-content {
+  background: #ffffff;
+  border-radius: 14px;
+  max-width: 92vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.workflow-lightbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.25rem;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.workflow-lightbox-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.btn-lightbox-action {
+  background: #6366f1;
+  color: #ffffff;
+  border: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-lightbox-action:hover {
+  background: #4f46e5;
+}
+
+.btn-lightbox-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.btn-lightbox-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.workflow-lightbox-body {
+  padding: 1.5rem;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.workflow-lightbox-img {
+  max-width: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.mermaid-fallback-pre {
+  margin: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  overflow-x: auto;
+}
+
+/* ── CODE SNIPPETS WITH COPY BUTTON ── */
+.code-snippet-block {
+  margin: 0.85rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+}
+
+.code-snippet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.8rem;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.code-lang-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.btn-copy-code {
+  background: transparent;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-code:hover {
+  background: #334155;
+  color: #ffffff;
+}
+
+.btn-copy-code.copied {
+  background: #059669;
+  border-color: #059669;
+  color: #ffffff;
+}
+
+.code-snippet-block pre {
+  margin: 0;
+  padding: 0.9rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+

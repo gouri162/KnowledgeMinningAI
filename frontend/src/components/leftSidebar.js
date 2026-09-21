@@ -1,3 +1,5 @@
+import { getMotionRobotHtml } from './motionRobot.js';
+
 export function renderLeftSidebar(conversations, activeConvId, activeNavTab = 'chat') {
   const navItems = [
     {
@@ -17,10 +19,7 @@ export function renderLeftSidebar(conversations, activeConvId, activeNavTab = 'c
       <!-- Brand Header -->
       <div class="sidebar-brand-header">
         <div class="brand-star-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="#3B82F6"/>
-            <circle cx="12" cy="12" r="2" fill="#FFFFFF"/>
-          </svg>
+          ${getMotionRobotHtml(32)}
         </div>
         <div class="brand-text-wrap">
           <span class="brand-name">ConsultAI</span>

@@ -35,6 +35,16 @@
   flex-shrink: 0;
 }
 
+.brand-robot-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  display: block;
+}
+
 .brand-text-wrap {
   display: flex;
   flex-direction: column;

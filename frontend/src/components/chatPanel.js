@@ -1,14 +1,53 @@
 import { marked } from 'marked';
+import { wrapUnfencedMermaid, buildMermaidContainerHtml } from './diagramRenderer.js';
+import { getMotionRobotHtml } from './motionRobot.js';
+
+export function getRobotAvatarHtml(size = 38, isHero = false) {
+  return getMotionRobotHtml(size, isHero);
+}
 
 marked.setOptions({
   gfm: true,
   breaks: true
 });
 
+marked.use({
+  renderer: {
+    code(token) {
+      const codeText = token.text || '';
+      const lang = (token.lang || '').toLowerCase().trim();
+      const isDiagram =
+        lang === 'mermaid' ||
+        lang === 'flowchart' ||
+        lang === 'graph' ||
+        /^(?:flowchart|graph)\s+(?:TD|TB|BT|RL|LR)\b/m.test(codeText.trim()) ||
+        /^(?:sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|gantt|mindmap)\b/m.test(codeText.trim());
+
+      if (isDiagram) {
+        return buildMermaidContainerHtml(codeText);
+      }
+
+      // Default code block rendering
+      const cleanLang = lang ? `language-${escapeHtml(lang)}` : '';
+      return `
+        <div class="code-snippet-block">
+          <div class="code-snippet-header">
+            <span class="code-lang-tag">${escapeHtml(lang || 'code')}</span>
+            <button class="btn-copy-code" data-code="${encodeURIComponent(codeText)}" title="Copy code">Copy</button>
+          </div>
+          <pre><code class="${cleanLang}">${escapeHtml(codeText)}</code></pre>
+        </div>
+      `;
+    }
+  }
+});
+
 function renderMarkdown(text) {
   if (!text) return '';
-  // Normalize markdown tables so they are surrounded by blank lines if attached to text
-  let s = text.replace(/([^\n])\n(\|[^\n]+\|\n\|[- :|]+\|)/g, '$1\n\n$2');
+  // 1. Wrap raw/unfenced flowcharts into ```mermaid blocks
+  let s = wrapUnfencedMermaid(text);
+  // 2. Normalize markdown tables so they are surrounded by blank lines if attached to text
+  s = s.replace(/([^\n])\n(\|[^\n]+\|\n\|[- :|]+\|)/g, '$1\n\n$2');
   s = s.replace(/(\|[^\n]+\|)\n([^\|\n\s][^\n]*)/g, '$1\n\n$2');
   try {
     const raw = marked.parse(s);
@@ -33,9 +72,7 @@ export function renderChatPanel(messages, isStreaming = false) {
           <!-- Centered Hero Greeting (No box, utilizes full screen) -->
           <div class="greeting-hero-wrap">
             <div class="greeting-sparkle-icon">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
-              </svg>
+              ${getRobotAvatarHtml(64, true)}
             </div>
             <h1 class="greeting-hero-heading">Hello! This is ConsultAI, how can I help you?</h1>
           </div>
@@ -45,10 +82,8 @@ export function renderChatPanel(messages, isStreaming = false) {
 
         ${isStreaming ? `
           <div class="message-row-assistant">
-            <div class="assistant-msg-avatar">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
-              </svg>
+            <div class="assistant-msg-avatar" title="ConsultAI Robot Assistant">
+              ${getRobotAvatarHtml(36)}
             </div>
             <div class="streaming-bubble">
               <span class="streaming-dot"></span>
@@ -139,10 +174,8 @@ function renderMessageRow(msg, idx) {
 
   return `
     <div class="message-row-assistant">
-      <div class="assistant-msg-avatar">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
-        </svg>
+      <div class="assistant-msg-avatar" title="ConsultAI Robot Assistant">
+        ${getRobotAvatarHtml(36)}
       </div>
 
       <div class="assistant-msg-content-wrap">

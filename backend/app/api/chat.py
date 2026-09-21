@@ -66,12 +66,14 @@ async def process_chat(req: ChatRequest):
             "subject names, room numbers, and faculty.\n"
             "4. SOURCE CITATION: In 'sources_used', list the exact document filename(s) used from Candidate Documents.\n"
             "5. TABLES & COMPARISONS: When the user asks for comparisons, differences, or structured data (e.g. 'in table format'), "
-            "ALWAYS output a well-structured GitHub-flavored Markdown table with clear column headers (| Column 1 | Column 2 | ...).\n\n"
+            "ALWAYS output a well-structured GitHub-flavored Markdown table with clear column headers (| Column 1 | Column 2 | ...).\n"
+            "6. FLOWCHARTS & PROCESS WORKFLOWS: When the user asks for a flowchart, workflow, process, study guide, or roadmap, "
+            "ALWAYS generate a clean, wide, balanced Mermaid diagram enclosed in ```mermaid\\nflowchart LR\\n ...\\n``` or a clean 4-6 step flowchart with subgraphs so it renders as a beautiful, easily readable infographic image (prefer horizontal 'flowchart LR' or grouped stages, avoid tall, skinny 15-node vertical lines; keep node labels concise and punchy).\n\n"
             "If the Candidate Documents do not contain the answer or the query is purely conversational/general, "
             "answer normally and set 'sources_used' to [].\n\n"
             "Format your reply strictly as valid JSON with three fields:\n"
             "{\n"
-            '  "answer": "Direct, exact answer quoting verbatim facts, options, data, or markdown table",\n'
+            '  "answer": "Direct, exact answer quoting verbatim facts, options, data, markdown table, or mermaid diagram",\n'
             '  "explanation": "Detailed explanation, background context, and reasoning from the document.",\n'
             '  "sources_used": ["filename.pdf"]\n'
             "}\n\n"
@@ -84,11 +86,13 @@ async def process_chat(req: ChatRequest):
             "financial performance, operational excellence, and conversational questions.\n"
             "When the user asks for comparisons, differences, or structured data (e.g. 'in table format'), "
             "ALWAYS provide a well-structured GitHub-flavored Markdown table with clear column headers (| Column 1 | Column 2 | ...).\n"
+            "When the user asks for a flowchart, workflow, study plan, process diagram, or roadmap, "
+            "ALWAYS provide a clean, wide, balanced Mermaid flowchart (prefer 'flowchart LR' or balanced 4-6 key stages) enclosed in markdown code fences: ```mermaid\\nflowchart LR\\n    A[Start] --> B[Phase 1]\\n...\\n``` with crisp, concise labels so it renders cleanly as a high-resolution workflow image.\n"
             "If the user asks follow-up questions, maintain coherent context from prior messages.\n"
             "If the user speaks or requests answers in Hindi/Hinglish or another language, respond fluently in that language.\n"
             "Format your reply strictly as valid JSON with three fields:\n"
             "{\n"
-            '  "answer": "A crisp, direct executive conclusion, answer, or markdown table",\n'
+            '  "answer": "A crisp, direct executive conclusion, answer, markdown table, or mermaid flowchart",\n'
             '  "explanation": "Detailed, thorough explanation, actionable reasoning, or context.",\n'
             '  "sources_used": []\n'
             "}"

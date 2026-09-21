@@ -4,6 +4,7 @@ import { renderChatPanel } from './components/chatPanel.js';
 import { renderDocumentsView } from './components/documentsView.js';
 import { renderDocumentModal } from './components/documentModal.js';
 import { showToast, showConfirmDialog, showPromptDialog } from './components/toast.js';
+import { renderAllDiagrams } from './components/diagramRenderer.js';
 
 // ── INITIAL CONSULTAI GREETING & NEW CONVERSATION GENERATOR ──
 function createInitialGreetingMessage() {
@@ -380,6 +381,7 @@ function renderApp() {
   `;
 
   attachEventListeners();
+  renderAllDiagrams(app);
 }
 
 // ── EVENT LISTENERS ATTACHMENT ──
@@ -761,6 +763,24 @@ function attachEventListeners() {
           copyBtn.innerHTML = ACTION_ICONS.copy;
           copyBtn.classList.remove('copied');
           copyBtn.setAttribute('title', 'Copy');
+        }, 2000);
+      }
+    });
+  });
+
+  // 11b. Copy code block button
+  document.querySelectorAll('.btn-copy-code').forEach(codeCopyBtn => {
+    codeCopyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const code = decodeURIComponent(codeCopyBtn.getAttribute('data-code') || '');
+      if (code) {
+        navigator.clipboard.writeText(code);
+        const orig = codeCopyBtn.textContent;
+        codeCopyBtn.textContent = '✓ Copied';
+        codeCopyBtn.classList.add('copied');
+        setTimeout(() => {
+          codeCopyBtn.textContent = orig;
+          codeCopyBtn.classList.remove('copied');
         }, 2000);
       }
     });
