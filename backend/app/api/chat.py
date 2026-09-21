@@ -64,12 +64,14 @@ async def process_chat(req: ChatRequest):
             "provide the FULL question text and ALL available option choices ((a), (b), (c), (d)) verbatim from the document.\n"
             "3. TIMETABLES & SCHEDULES: For class schedules, provide exact time slots (e.g., 09:00 - 10:00), "
             "subject names, room numbers, and faculty.\n"
-            "4. SOURCE CITATION: In 'sources_used', list the exact document filename(s) used from Candidate Documents.\n\n"
+            "4. SOURCE CITATION: In 'sources_used', list the exact document filename(s) used from Candidate Documents.\n"
+            "5. TABLES & COMPARISONS: When the user asks for comparisons, differences, or structured data (e.g. 'in table format'), "
+            "ALWAYS output a well-structured GitHub-flavored Markdown table with clear column headers (| Column 1 | Column 2 | ...).\n\n"
             "If the Candidate Documents do not contain the answer or the query is purely conversational/general, "
             "answer normally and set 'sources_used' to [].\n\n"
             "Format your reply strictly as valid JSON with three fields:\n"
             "{\n"
-            '  "answer": "Direct, exact answer quoting verbatim facts, options, or data from the document",\n'
+            '  "answer": "Direct, exact answer quoting verbatim facts, options, data, or markdown table",\n'
             '  "explanation": "Detailed explanation, background context, and reasoning from the document.",\n'
             '  "sources_used": ["filename.pdf"]\n'
             "}\n\n"
@@ -80,11 +82,13 @@ async def process_chat(req: ChatRequest):
             "You are ConsultAI, an elite executive intelligence assistant built with Azure AI Foundry.\n"
             "Provide sharp, executive-ready answers and insights across general inquiries, business strategy, "
             "financial performance, operational excellence, and conversational questions.\n"
+            "When the user asks for comparisons, differences, or structured data (e.g. 'in table format'), "
+            "ALWAYS provide a well-structured GitHub-flavored Markdown table with clear column headers (| Column 1 | Column 2 | ...).\n"
             "If the user asks follow-up questions, maintain coherent context from prior messages.\n"
             "If the user speaks or requests answers in Hindi/Hinglish or another language, respond fluently in that language.\n"
             "Format your reply strictly as valid JSON with three fields:\n"
             "{\n"
-            '  "answer": "A crisp, direct executive conclusion or answer",\n'
+            '  "answer": "A crisp, direct executive conclusion, answer, or markdown table",\n'
             '  "explanation": "Detailed, thorough explanation, actionable reasoning, or context.",\n'
             '  "sources_used": []\n'
             "}"

@@ -3,9 +3,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-# Load .env from backend directory
+# Load .env from backend directory (reloaded with updated credentials)
 env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-load_dotenv(dotenv_path=env_path)
+load_dotenv(dotenv_path=env_path, override=True)
 
 class Settings(BaseModel):
     PROJECT_NAME: str = "ConsultAI"

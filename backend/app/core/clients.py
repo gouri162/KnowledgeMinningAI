@@ -12,6 +12,6 @@ def get_azure_client() -> AzureOpenAI:
         api_version=settings.AZURE_API_VERSION
     )
 
-# Shared singleton client instances
+# Shared singleton client instances (created from active settings)
 supabase: Client = get_supabase_client()
 azure_openai: AzureOpenAI = get_azure_client()

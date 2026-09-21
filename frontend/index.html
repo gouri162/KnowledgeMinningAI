@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/styles/variables.css">
+  <link rel="stylesheet" href="/src/styles/wave.css">
   <link rel="stylesheet" href="/src/styles/base.css">
   <link rel="stylesheet" href="/src/styles/layout.css">
   <link rel="stylesheet" href="/src/styles/sidebar.css">
@@ -17,6 +18,45 @@
   <link rel="stylesheet" href="/src/styles/toast.css">
 </head>
 <body>
+  <!-- ── Soft Pastel Wave Background ── -->
+  <div id="wave-canvas-bg" aria-hidden="true">
+    <!-- Soft pastel orb blobs -->
+    <div class="wave-orb wave-orb-1"></div>
+    <div class="wave-orb wave-orb-2"></div>
+    <div class="wave-orb wave-orb-3"></div>
+    <div class="wave-orb wave-orb-4"></div>
+    <div class="wave-orb wave-orb-5"></div>
+
+    <!-- SVG flowing pastel wave shapes -->
+    <svg class="wave-svg-layer" viewBox="0 0 1920 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#d8b4fe" stop-opacity="0.35"/>
+          <stop offset="50%" stop-color="#f9a8d4" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#bae6fd" stop-opacity="0.3"/>
+        </linearGradient>
+        <linearGradient id="wg2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#c4b5fd" stop-opacity="0.4"/>
+          <stop offset="50%" stop-color="#fbcfe8" stop-opacity="0.45"/>
+          <stop offset="100%" stop-color="#a5f3fc" stop-opacity="0.35"/>
+        </linearGradient>
+        <linearGradient id="wg3" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.35"/>
+          <stop offset="50%" stop-color="#f9a8d4" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#93c5fd" stop-opacity="0.3"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#wg1)" style="animation: waveSVG1 9s ease-in-out infinite" d="M0,55 C200,18 400,78 600,48 C800,18 1000,68 1200,42 C1400,18 1600,62 1920,38 L1920,120 L0,120 Z"/>
+      <path fill="url(#wg2)" style="animation: waveSVG2 11s ease-in-out infinite" d="M0,88 C250,48 500,108 750,72 C1000,38 1250,98 1500,62 C1700,32 1850,82 1920,58 L1920,120 L0,120 Z"/>
+      <path fill="url(#wg3)" style="animation: waveSVG3 13s ease-in-out infinite" d="M0,98 C300,68 600,108 900,78 C1200,48 1500,98 1920,68 L1920,120 L0,120 Z"/>
+    </svg>
+
+    <!-- Subtle dot texture -->
+    <div class="wave-noise-overlay"></div>
+    <!-- Soft vignette -->
+    <div class="wave-vignette"></div>
+  </div>
+
   <div id="app" class="app-root">
     <!-- Content mounted by main.js -->
   </div>

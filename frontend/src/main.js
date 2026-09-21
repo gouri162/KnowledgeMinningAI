@@ -3,7 +3,7 @@ import { renderLeftSidebar } from './components/leftSidebar.js';
 import { renderChatPanel } from './components/chatPanel.js';
 import { renderDocumentsView } from './components/documentsView.js';
 import { renderDocumentModal } from './components/documentModal.js';
-import { showToast, showConfirmDialog } from './components/toast.js';
+import { showToast, showConfirmDialog, showPromptDialog } from './components/toast.js';
 
 // ── INITIAL CONSULTAI GREETING & NEW CONVERSATION GENERATOR ──
 function createInitialGreetingMessage() {
@@ -47,6 +47,7 @@ function loadSavedConversations() {
 const state = {
   activeTab: 'chat', // 'chat' | 'documents'
   activeConvId: '',
+  searchQuery: '',
   isStreaming: false,
   isUploadingDoc: false,
   workflowState: {
@@ -282,6 +283,72 @@ async function handlePurgeDocuments() {
   });
 }
 
+// ── HELPER: BEST MATCHING CONVERSATION SEARCH ──
+function findBestMatchingConversation(query, conversations) {
+  if (!query || !conversations || conversations.length === 0) return null;
+  const q = query.toLowerCase().trim();
+  const qWords = q.split(/\s+/).filter(w => w.length > 0);
+
+  let bestConv = null;
+  let highestScore = -1;
+
+  for (const conv of conversations) {
+    const title = (conv.title || '').toLowerCase().trim();
+    let score = 0;
+
+    // 1. Exact match with title (case-insensitive)
+    if (title === q) {
+      score = 1000;
+    } 
+    // 2. Title starts with query
+    else if (title.startsWith(q)) {
+      score = 600 + Math.min(100, Math.floor((q.length / title.length) * 100));
+    } 
+    // 3. Title contains full query string
+    else if (title.includes(q)) {
+      score = 400 + Math.min(100, Math.floor((q.length / title.length) * 100));
+    } 
+    // 4. Word-by-word title matching
+    else {
+      let matchedCount = 0;
+      for (const word of qWords) {
+        if (title.includes(word)) {
+          matchedCount++;
+        }
+      }
+      if (matchedCount > 0) {
+        score = 200 + (matchedCount / qWords.length) * 150;
+      }
+    }
+
+    // 5. If title didn't match well or at all, search inside messages (content, answer, explanation)
+    if (score < 200 && conv.messages && conv.messages.length > 0) {
+      for (const m of conv.messages) {
+        const text = `${m.content || ''} ${m.answer || ''} ${m.explanation || ''}`.toLowerCase();
+        if (text.includes(q)) {
+          score = Math.max(score, 100);
+          break;
+        } else {
+          // Check if any query word appears in messages
+          for (const word of qWords) {
+            if (word.length > 2 && text.includes(word)) {
+              score = Math.max(score, 50);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (score > highestScore && score > 0) {
+      highestScore = score;
+      bestConv = conv;
+    }
+  }
+
+  return bestConv;
+}
+
 // ── DOM MOUNT & RENDER FUNCTION ──
 function renderApp() {
   const app = document.getElementById('app');
@@ -304,7 +371,7 @@ function renderApp() {
   app.innerHTML = `
     ${renderLeftSidebar(state.conversations, state.activeConvId, state.activeTab)}
     <div class="app-main-content">
-      ${renderTopNav()}
+      ${renderTopNav(state.searchQuery)}
       <div class="app-body-container">
         ${mainContentHtml}
       </div>
@@ -376,7 +443,41 @@ function attachEventListeners() {
     });
   });
 
-  // 5. Delete Chat Click Action
+  // 5. Rename Chat Action
+  document.querySelectorAll('.dropdown-item-rename').forEach(renameBtn => {
+    renameBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const convId = renameBtn.getAttribute('data-rename-conv-id');
+      const conv = state.conversations.find(c => c.id === convId);
+      if (!conv) return;
+
+      document.querySelectorAll('.conv-dropdown-menu.show').forEach(m => m.classList.remove('show'));
+
+      showPromptDialog({
+        title: 'Rename Chat',
+        message: 'Enter a new title for this conversation:',
+        defaultValue: conv.title || '',
+        placeholder: 'Chat title...',
+        confirmText: 'Save',
+        cancelText: 'Cancel',
+        onConfirm: (newTitle) => {
+          if (newTitle && newTitle.trim() && newTitle.trim() !== conv.title) {
+            conv.title = newTitle.trim();
+            persistConversations();
+            renderApp();
+            showToast({
+              title: 'Chat Renamed',
+              message: `Renamed to "${conv.title}"`,
+              type: 'success',
+              duration: 3000
+            });
+          }
+        }
+      });
+    });
+  });
+
+  // 6. Delete Chat Click Action
   document.querySelectorAll('.dropdown-item-delete').forEach(delBtn => {
     delBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -527,40 +628,188 @@ function attachEventListeners() {
     });
   });
 
-  // 10. Regenerate response button
-  const btnRegen = document.getElementById('btn-regenerate-chat');
-  if (btnRegen) {
-    btnRegen.addEventListener('click', () => {
+  // 10. Regenerate response buttons (attached to all assistant message cards)
+  document.querySelectorAll('.btn-regenerate').forEach(btnRegen => {
+    btnRegen.addEventListener('click', async (e) => {
+      if (state.isStreaming) return;
+
       const currentConv = state.conversations.find(c => c.id === state.activeConvId);
-      if (currentConv && currentConv.messages.length > 0) {
-        const lastUserMsg = [...currentConv.messages].reverse().find(m => m.role === 'user');
-        if (lastUserMsg) {
-          if (currentConv.messages[currentConv.messages.length - 1].role === 'assistant') {
-            currentConv.messages.pop();
+      if (!currentConv || !currentConv.messages || currentConv.messages.length === 0) return;
+
+      const idxStr = e.currentTarget.getAttribute('data-msg-idx');
+      let targetIdx = idxStr !== null && idxStr !== undefined ? parseInt(idxStr, 10) : -1;
+
+      // Find the target assistant message index
+      if (isNaN(targetIdx) || targetIdx < 0 || targetIdx >= currentConv.messages.length) {
+        for (let i = currentConv.messages.length - 1; i >= 0; i--) {
+          if (currentConv.messages[i].role === 'assistant' && !currentConv.messages[i].isGreeting) {
+            targetIdx = i;
+            break;
           }
-          executeSendMessage(lastUserMsg.content);
         }
       }
-    });
-  }
 
-  // 11. Copy answer button
+      // Find the user query that preceded this assistant response
+      let userQuery = '';
+      for (let i = targetIdx - 1; i >= 0; i--) {
+        if (currentConv.messages[i].role === 'user') {
+          userQuery = currentConv.messages[i].content;
+          break;
+        }
+      }
+
+      // If not found, find any last user message
+      if (!userQuery) {
+        const lastUserMsg = [...currentConv.messages].reverse().find(m => m.role === 'user');
+        if (lastUserMsg) userQuery = lastUserMsg.content;
+      }
+
+      if (!userQuery) return;
+
+      // Remove the assistant message that is being regenerated (so it gets replaced)
+      if (targetIdx >= 0 && targetIdx < currentConv.messages.length) {
+        currentConv.messages.splice(targetIdx, 1);
+      }
+
+      state.isStreaming = true;
+      persistConversations();
+      renderApp();
+
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      try {
+        const historyPayload = currentConv.messages
+          .filter(m => !m.isGreeting)
+          .slice(-8)
+          .map(m => ({
+            role: m.role,
+            content: m.role === 'assistant' ? `${m.answer || ''}\n${m.explanation || ''}`.trim() : (m.content || ''),
+            answer: m.answer,
+            explanation: m.explanation
+          }));
+
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conversation_id: currentConv.id,
+            message: userQuery,
+            history: historyPayload
+          })
+        });
+
+        if (!res.ok) {
+          throw new Error(`Server returned status ${res.status}`);
+        }
+
+        const data = await res.json();
+        currentConv.messages.push({
+          role: 'assistant',
+          answer: data.answer,
+          explanation: data.explanation,
+          sources: data.sources || [],
+          duration: data.duration || '2s',
+          timestamp: data.timestamp || timeStr
+        });
+
+        if (data.sources && data.sources.length > 0) {
+          state.referencedDocs = data.sources;
+        } else {
+          state.referencedDocs = [];
+        }
+        if (data.duration) {
+          state.workflowState.total_duration = data.duration;
+        }
+      } catch (err) {
+        console.error("Regenerate error:", err);
+        currentConv.messages.push({
+          role: 'assistant',
+          answer: `Direct response generated for your query.`,
+          explanation: `We encountered an issue regenerating this response. Please verify backend connectivity.`,
+          sources: [],
+          duration: '1s',
+          timestamp: timeStr
+        });
+      } finally {
+        state.isStreaming = false;
+        persistConversations();
+        renderApp();
+      }
+    });
+  });
+
+  // Action button icons dictionary
+  const ACTION_ICONS = {
+    copy: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`,
+    check: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+    likeOutline: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`,
+    likeFilled: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`,
+    dislikeOutline: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>`,
+    dislikeFilled: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>`
+  };
+
+  // 11. Copy answer button: switches to tick icon and reverts
   document.querySelectorAll('.btn-copy').forEach(copyBtn => {
     copyBtn.addEventListener('click', (e) => {
       const copyText = e.currentTarget.getAttribute('data-copy-text');
       if (copyText) {
         navigator.clipboard.writeText(copyText);
-        copyBtn.style.color = '#10B981';
-        setTimeout(() => { copyBtn.style.color = ''; }, 1500);
+        copyBtn.innerHTML = ACTION_ICONS.check;
+        copyBtn.classList.add('copied');
+        copyBtn.setAttribute('title', 'Copied!');
+        setTimeout(() => {
+          copyBtn.innerHTML = ACTION_ICONS.copy;
+          copyBtn.classList.remove('copied');
+          copyBtn.setAttribute('title', 'Copy');
+        }, 2000);
       }
     });
   });
 
-  // 12. Like / Dislike buttons
-  document.querySelectorAll('.btn-like, .btn-dislike').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.currentTarget.classList.toggle('active');
-    });
+  // 12. Like / Dislike buttons: switch between outline and filled icon with mutual exclusivity
+  document.querySelectorAll('.assistant-actions-left').forEach(actionsWrap => {
+    const likeBtn = actionsWrap.querySelector('.btn-like');
+    const dislikeBtn = actionsWrap.querySelector('.btn-dislike');
+
+    if (likeBtn) {
+      likeBtn.addEventListener('click', () => {
+        const isCurrentlyActive = likeBtn.classList.contains('active');
+        if (isCurrentlyActive) {
+          likeBtn.classList.remove('active');
+          likeBtn.innerHTML = ACTION_ICONS.likeOutline;
+          likeBtn.setAttribute('title', 'Helpful');
+        } else {
+          likeBtn.classList.add('active');
+          likeBtn.innerHTML = ACTION_ICONS.likeFilled;
+          likeBtn.setAttribute('title', 'Marked as helpful');
+          if (dislikeBtn) {
+            dislikeBtn.classList.remove('active');
+            dislikeBtn.innerHTML = ACTION_ICONS.dislikeOutline;
+            dislikeBtn.setAttribute('title', 'Not helpful');
+          }
+        }
+      });
+    }
+
+    if (dislikeBtn) {
+      dislikeBtn.addEventListener('click', () => {
+        const isCurrentlyActive = dislikeBtn.classList.contains('active');
+        if (isCurrentlyActive) {
+          dislikeBtn.classList.remove('active');
+          dislikeBtn.innerHTML = ACTION_ICONS.dislikeOutline;
+          dislikeBtn.setAttribute('title', 'Not helpful');
+        } else {
+          dislikeBtn.classList.add('active');
+          dislikeBtn.innerHTML = ACTION_ICONS.dislikeFilled;
+          dislikeBtn.setAttribute('title', 'Marked as not helpful');
+          if (likeBtn) {
+            likeBtn.classList.remove('active');
+            likeBtn.innerHTML = ACTION_ICONS.likeOutline;
+            likeBtn.setAttribute('title', 'Helpful');
+          }
+        }
+      });
+    }
   });
 
   // 13. PDF File upload attachment in Chat input
@@ -715,19 +964,79 @@ function attachEventListeners() {
     });
   }
 
-  // 21. Global search bar in top header
+  // 21. Global search bar in top header: search chats & messages in real time
   const searchInput = document.getElementById('global-search-input');
   if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase().trim();
-      if (!query) {
-        document.querySelectorAll('.conversation-row').forEach(row => row.style.display = 'flex');
-        return;
-      }
+    const applySearchFilter = (rawText) => {
+      const query = (rawText || '').toLowerCase().trim();
+
+      // Filter conversation rows in sidebar by title and messages
       document.querySelectorAll('.conversation-row').forEach(row => {
-        const title = row.querySelector('.conv-title-text')?.textContent.toLowerCase() || '';
-        row.style.display = title.includes(query) ? 'flex' : 'none';
+        if (!query) {
+          row.style.display = 'flex';
+          return;
+        }
+        const convId = row.getAttribute('data-conv-id');
+        const conv = state.conversations.find(c => c.id === convId);
+        const titleMatch = conv?.title?.toLowerCase().includes(query);
+        const messageMatch = conv?.messages?.some(m =>
+          (m.content && m.content.toLowerCase().includes(query)) ||
+          (m.answer && m.answer.toLowerCase().includes(query)) ||
+          (m.explanation && m.explanation.toLowerCase().includes(query))
+        );
+        row.style.display = (titleMatch || messageMatch) ? 'flex' : 'none';
       });
+    };
+
+    // Apply filter immediately if query exists from previous render
+    if (state.searchQuery) {
+      applySearchFilter(state.searchQuery);
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      state.searchQuery = e.target.value;
+      applySearchFilter(state.searchQuery);
+    });
+
+    // Enter key: jump directly to the most matching chat
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const rawQuery = searchInput.value.trim();
+        if (!rawQuery) return;
+
+        const matchedConv = findBestMatchingConversation(rawQuery, state.conversations);
+        if (matchedConv) {
+          state.activeConvId = matchedConv.id;
+          state.activeTab = 'chat';
+          state.searchQuery = ''; // Reset search filter so all chats are visible and font is untouched
+          renderApp();
+          showToast({
+            title: 'Chat Found',
+            message: `Switched to "${matchedConv.title}"`,
+            type: 'info',
+            duration: 2500
+          });
+          setTimeout(() => {
+            const activeRow = document.querySelector(`.conversation-row[data-conv-id="${matchedConv.id}"]`);
+            if (activeRow) {
+              activeRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          }, 60);
+        } else {
+          showToast({
+            title: 'No Matching Chat',
+            message: `No chats found matching "${rawQuery}"`,
+            type: 'warning',
+            duration: 2500
+          });
+        }
+      } else if (e.key === 'Escape') {
+        state.searchQuery = '';
+        searchInput.value = '';
+        applySearchFilter('');
+        searchInput.blur();
+      }
     });
   }
 

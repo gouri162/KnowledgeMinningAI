@@ -177,6 +177,98 @@ export function showConfirmDialog({
   });
 }
 
+/**
+ * Modern Prompt Dialog for renaming chats
+ */
+export function showPromptDialog({
+  title = 'Rename Chat',
+  message = 'Enter a new title for this consultation:',
+  defaultValue = '',
+  placeholder = 'New chat title...',
+  confirmText = 'Save',
+  cancelText = 'Cancel',
+  onConfirm = () => {}
+}) {
+  const existing = document.getElementById('custom-prompt-modal-backdrop');
+  if (existing) existing.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.id = 'custom-prompt-modal-backdrop';
+  backdrop.className = 'custom-confirm-backdrop';
+
+  backdrop.innerHTML = `
+    <div class="custom-confirm-card prompt-dialog-card">
+      <div class="confirm-icon-box confirm-info">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+      </div>
+      <div class="confirm-content" style="width: 100%;">
+        <h3 class="confirm-title">${escapeHtml(title)}</h3>
+        <p class="confirm-desc">${escapeHtml(message)}</p>
+        <div style="margin-top: 0.85rem; width: 100%;">
+          <input 
+            type="text" 
+            id="prompt-dialog-input" 
+            class="prompt-dialog-input" 
+            value="${escapeForAttr(defaultValue)}" 
+            placeholder="${escapeForAttr(placeholder)}"
+            autocomplete="off"
+            style="width: 100%; padding: 0.65rem 0.9rem; border: 1.5px solid rgba(167, 139, 250, 0.35); border-radius: 8px; font-size: 0.9rem; outline: none; background: rgba(255, 255, 255, 0.95); color: #312e81; font-family: inherit; box-sizing: border-box;"
+          />
+        </div>
+      </div>
+      <div class="confirm-actions" style="margin-top: 1rem;">
+        <button class="confirm-btn-cancel" id="prompt-btn-cancel">${escapeHtml(cancelText)}</button>
+        <button class="confirm-btn-action confirm-btn-primary" id="prompt-btn-ok">${escapeHtml(confirmText)}</button>
+      </div>
+    </div>
+  `;
+
+  const input = backdrop.querySelector('#prompt-dialog-input');
+
+  const closeDialog = () => {
+    backdrop.classList.add('fade-out');
+    setTimeout(() => {
+      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+    }, 200);
+  };
+
+  const handleSave = () => {
+    const newVal = input.value.trim();
+    if (newVal) {
+      closeDialog();
+      if (typeof onConfirm === 'function') onConfirm(newVal);
+    } else {
+      input.focus();
+    }
+  };
+
+  backdrop.querySelector('#prompt-btn-cancel').addEventListener('click', closeDialog);
+  backdrop.querySelector('#prompt-btn-ok').addEventListener('click', handleSave);
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === 'Escape') {
+      closeDialog();
+    }
+  });
+
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) closeDialog();
+  });
+
+  document.body.appendChild(backdrop);
+  requestAnimationFrame(() => {
+    backdrop.classList.add('visible');
+    input.focus();
+    input.select();
+  });
+}
+
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
@@ -184,4 +276,9 @@ function escapeHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function escapeForAttr(str) {
+  if (!str) return '';
+  return String(str).replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 }
