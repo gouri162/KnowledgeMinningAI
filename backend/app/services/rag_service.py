@@ -295,7 +295,102 @@ def index_pdf_document(file_bytes: bytes, filename: str) -> Dict:
     return {
         "filename": filename,
         "chunks_indexed": total_chunks,
-        "status": "completed"
+        "status": "completed",
+        "type": "pdf"
+    }
+
+def extract_text_from_image_bytes(img_bytes: bytes, filename: str) -> str:
+    """Uses Azure OpenAI Vision to extract all text, data, and details from an uploaded image file."""
+    try:
+        base64_img = base64.b64encode(img_bytes).decode("utf-8")
+        ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else "png"
+        mime_type = "image/png" if ext == "png" else ("image/webp" if ext == "webp" else "image/jpeg")
+
+        response = azure_openai.chat.completions.create(
+            model=settings.CHAT_MODEL,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": (
+                                "You are an expert document and image intelligence analyst. "
+                                "Extract all text, numbers, dates, tables, titles, bullet points, and factual information verbatim from this image. "
+                                "If there is a table or timetable, format it as a clean Markdown table. "
+                                "Preserve all names, subjects, marks, credentials, and details accurately. "
+                                "Output only the extracted structured content without pleasantries."
+                            )
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:{mime_type};base64,{base64_img}"}
+                        }
+                    ]
+                }
+            ],
+            max_tokens=3000,
+            temperature=0.1
+        )
+        return clean_extracted_text(response.choices[0].message.content.strip())
+    except Exception as e:
+        print(f"Image vision extraction error: {e}")
+        return ""
+
+def index_image_document(file_bytes: bytes, filename: str) -> Dict[str, Any]:
+    """Indexes an image (PNG, JPG, JPEG, WEBP) into Supabase using Azure OpenAI Vision and embeddings."""
+    extracted_text = extract_text_from_image_bytes(file_bytes, filename)
+    if not extracted_text:
+        raise ValueError(f"No extractable text or details found in image '{filename}'.")
+
+    prefix = f"[Document: {filename} | Image Knowledge]\n"
+    words = extracted_text.split()
+    
+    all_chunks = []
+    if len(words) <= 500:
+        all_chunks.append({"chunk": f"{prefix}{extracted_text}", "page": 1})
+    else:
+        chunk_size = 400
+        overlap = 80
+        start = 0
+        while start < len(words):
+            chunk_words = words[start : start + chunk_size]
+            all_chunks.append({"chunk": f"{prefix}" + " ".join(chunk_words), "page": 1})
+            if start + chunk_size >= len(words):
+                break
+            start += (chunk_size - overlap)
+
+    total_chunks = len(all_chunks)
+
+    # Delete any previous chunks for the same filename
+    try:
+        supabase.table("documents").delete().filter("metadata->>source", "eq", filename).execute()
+    except Exception as e:
+        print(f"Warning during duplicate purge: {e}")
+
+    for item in all_chunks:
+        chunk_text_content = item["chunk"]
+        emb_res = azure_openai.embeddings.create(
+            input=chunk_text_content,
+            model=settings.EMBED_MODEL
+        )
+        emb = emb_res.data[0].embedding
+        
+        supabase.table("documents").insert({
+            "content": chunk_text_content,
+            "metadata": {
+                "source": filename,
+                "page": item["page"],
+                "type": "image"
+            },
+            "embedding": emb
+        }).execute()
+
+    return {
+        "filename": filename,
+        "chunks_indexed": total_chunks,
+        "status": "completed",
+        "type": "image"
     }
 
 def search_relevant_context(query: str, top_k: int = 8, min_similarity: float = 0.15) -> Tuple[str, List[Dict]]:
@@ -469,9 +564,11 @@ def search_relevant_context(query: str, top_k: int = 8, min_similarity: float = 
             if src and src not in seen_sources:
                 seen_sources.add(src)
                 sim_val = d.get("similarity", 0.85) or 0.85
+                ext = src.lower().rsplit(".", 1)[-1] if "." in src else ""
+                doc_type = "image" if ext in ["png", "jpg", "jpeg", "webp", "bmp"] else "pdf"
                 sources.append({
                     "name": src,
-                    "type": "pdf",
+                    "type": doc_type,
                     "similarity": round(float(sim_val), 3),
                     "description": "Used for answer generation"
                 })
@@ -486,13 +583,19 @@ def list_indexed_documents() -> List[Dict]:
         res = supabase.table("documents").select("metadata").limit(500).execute()
         data = res.data or []
         sources = {}
+        types = {}
         for row in data:
             meta = row.get("metadata", {})
             src = meta.get("source", "Document.pdf")
             sources[src] = sources.get(src, 0) + 1
+            ext = src.lower().rsplit(".", 1)[-1] if "." in src else ""
+            if ext in ["png", "jpg", "jpeg", "webp", "bmp"] or meta.get("type") == "image":
+                types[src] = "image"
+            else:
+                types[src] = "pdf"
             
         return [
-            {"name": name, "chunks": count, "type": "pdf"}
+            {"name": name, "chunks": count, "type": types.get(name, "pdf")}
             for name, count in sources.items()
         ]
     except Exception as e:

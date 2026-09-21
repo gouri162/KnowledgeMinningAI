@@ -1,155 +1,220 @@
 /**
- * 3D Motion Robot Model Component
- * Features GPU-accelerated 60fps continuous floating, waving arm,
- * blinking LED matrix eyes, pulsing chest reactor, and rotating neon halo.
+ * 3D Motion Robot Component
+ * Inspired by modern 3D AI companion designs:
+ * - Ceramic white pearlescent body with cute cat/devil ears
+ * - Dark curved glossy monitor visor
+ * - Floating anti-gravity pill arms
+ * - Digital scanline matrix screen with expressive blinking & winking eyes
+ * - Smooth 60fps hovering, breathing shadow, and interactive 3D physics
  */
 
 export function getMotionRobotHtml(size = 42, isHero = false) {
   const s = isHero ? 96 : size;
+  const h = Math.round(s * 0.88);
   
   return `
     <div class="motion-robot-container ${isHero ? 'hero-robot-container' : ''}" style="--robot-size: ${s}px;">
-      <!-- Glowing 3D Neon Halo Ring -->
-      <div class="robot-neon-halo"></div>
+      <!-- Subtle Ambient Glow Halo -->
+      <div class="robot-ambient-glow"></div>
 
       <!-- Main Animated 3D Robot Figure -->
       <div class="robot-3d-figure">
         <svg 
-          viewBox="0 0 120 130" 
+          viewBox="0 0 160 140" 
           width="${s}" 
-          height="${Math.round(s * 1.08)}" 
+          height="${h}" 
           class="motion-robot-svg" 
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <!-- 3D Metallic Head & Body Gradient -->
-            <linearGradient id="metalChassis" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#FFFFFF"/>
-              <stop offset="45%" stop-color="#EDE9FE"/>
-              <stop offset="85%" stop-color="#C4B5FD"/>
-              <stop offset="100%" stop-color="#8B5CF6"/>
+            <!-- 3D Pearlescent White Ceramic Head/Body Shading -->
+            <radialGradient id="robotWhiteBody3D" cx="44%" cy="28%" r="68%">
+              <stop offset="0%" stop-color="#FFFFFF" />
+              <stop offset="38%" stop-color="#F8FAFD" />
+              <stop offset="68%" stop-color="#E2E8F0" />
+              <stop offset="92%" stop-color="#CBD5E1" />
+              <stop offset="100%" stop-color="#94A3B8" />
+            </radialGradient>
+
+            <!-- 3D Floating Pill Arm Gradient -->
+            <linearGradient id="robotArmGrad" x1="15%" y1="0%" x2="85%" y2="100%">
+              <stop offset="0%" stop-color="#FFFFFF" />
+              <stop offset="40%" stop-color="#F1F5F9" />
+              <stop offset="80%" stop-color="#CBD5E1" />
+              <stop offset="100%" stop-color="#94A3B8" />
             </linearGradient>
 
-            <!-- 3D Purple Core Gradient -->
-            <linearGradient id="purpleCore" x1="20%" y1="0%" x2="80%" y2="100%">
-              <stop offset="0%" stop-color="#A78BFA"/>
-              <stop offset="50%" stop-color="#7C3AED"/>
-              <stop offset="100%" stop-color="#4C1D95"/>
+            <!-- Deep Glossy Monitor Face / Visor Gradient -->
+            <linearGradient id="robotScreenVisor" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#26282E" />
+              <stop offset="25%" stop-color="#18191E" />
+              <stop offset="70%" stop-color="#0F1013" />
+              <stop offset="100%" stop-color="#07080A" />
             </linearGradient>
 
-            <!-- Visor Glass Depth Gradient -->
-            <linearGradient id="visorGlass" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#0F172A"/>
-              <stop offset="70%" stop-color="#1E1B4B"/>
-              <stop offset="100%" stop-color="#0B0F19"/>
+            <!-- Inner Screen Bezel Rim Gradient -->
+            <linearGradient id="robotScreenRim" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#383C46" />
+              <stop offset="50%" stop-color="#1E2129" />
+              <stop offset="100%" stop-color="#0E1015" />
             </linearGradient>
 
-            <!-- Neon Cyan Glow -->
-            <filter id="cyanNeonGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+            <!-- Digital LED Matrix Scanlines Pattern -->
+            <pattern id="digitalScanlines" width="16" height="3" patternUnits="userSpaceOnUse">
+              <rect x="0" y="0" width="16" height="2" fill="#FFFFFF" />
+              <rect x="0" y="2" width="16" height="1" fill="rgba(10, 15, 20, 0.45)" />
+            </pattern>
+
+            <!-- Phosphor Emission Screen Glow -->
+            <filter id="screenPhosphorGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="1.6" result="glow" />
               <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
+                <feMergeNode in="glow" />
+                <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
 
-            <!-- Soft Specular 3D Highlight -->
-            <linearGradient id="specularGlint" x1="0%" y1="0%" x2="100%" y2="50%">
-              <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85"/>
-              <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0"/>
+            <!-- Ear Specular Highlights -->
+            <linearGradient id="earHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9" />
+              <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
             </linearGradient>
           </defs>
 
-          <!-- Floating Shadow Beneath Robot -->
-          <ellipse cx="60" cy="122" rx="22" ry="4.5" fill="rgba(79, 70, 229, 0.28)" class="robot-ground-shadow"/>
+          <!-- Ground Contact Shadow with breathing scale -->
+          <ellipse cx="80" cy="132" rx="36" ry="5.5" fill="rgba(15, 23, 42, 0.2)" class="robot-ground-shadow" />
 
-          <!-- Floating Robot Group -->
+          <!-- Hovering Floating Body Entity -->
           <g class="robot-bobbing-body">
-            <!-- Left Arm (Resting) -->
-            <g class="robot-left-arm">
-              <rect x="22" y="74" width="10" height="24" rx="5" fill="url(#metalChassis)" stroke="#7C3AED" stroke-width="1.2"/>
-              <circle cx="27" cy="98" r="4.5" fill="url(#purpleCore)"/>
+            
+            <!-- Left Floating Pill Arm / Hand -->
+            <g class="robot-floating-arm-left-wrap">
+              <rect 
+                x="9" 
+                y="54" 
+                width="13" 
+                height="34" 
+                rx="6.5" 
+                fill="url(#robotArmGrad)" 
+                stroke="rgba(148, 163, 184, 0.3)" 
+                stroke-width="0.8" 
+                transform="rotate(-15 15.5 71)" 
+                class="robot-arm-pill"
+              />
+              <!-- Arm 3D Specular Sheen -->
+              <ellipse cx="13" cy="62" rx="2.5" ry="7" fill="rgba(255,255,255,0.7)" transform="rotate(-15 13 62)" />
             </g>
 
-            <!-- Torso / Chest Body -->
-            <g class="robot-torso">
-              <!-- Back Armor Shell -->
-              <rect x="36" y="68" width="48" height="42" rx="14" fill="url(#metalChassis)" stroke="#7C3AED" stroke-width="1.5"/>
-              <!-- Purple Chest Inset -->
-              <rect x="42" y="73" width="36" height="32" rx="10" fill="url(#purpleCore)"/>
-              <!-- Glowing AI Core Reactor -->
-              <circle cx="60" cy="87" r="9" fill="#06B6D4" filter="url(#cyanNeonGlow)" class="robot-reactor-core"/>
-              <text x="60" y="90.5" font-family="'Inter', system-ui, sans-serif" font-weight="900" font-size="7" fill="#FFFFFF" text-anchor="middle">AI</text>
-              <!-- Chest Seam Lights -->
-              <path d="M46 76 Q60 80 74 76" stroke="#22D3EE" stroke-width="1" fill="none" opacity="0.85"/>
+            <!-- Right Floating Pill Arm / Hand -->
+            <g class="robot-floating-arm-right-wrap">
+              <rect 
+                x="138" 
+                y="54" 
+                width="13" 
+                height="34" 
+                rx="6.5" 
+                fill="url(#robotArmGrad)" 
+                stroke="rgba(148, 163, 184, 0.3)" 
+                stroke-width="0.8" 
+                transform="rotate(15 144.5 71)" 
+                class="robot-arm-pill"
+              />
+              <!-- Arm 3D Specular Sheen -->
+              <ellipse cx="147" cy="62" rx="2.5" ry="7" fill="rgba(255,255,255,0.7)" transform="rotate(15 147 62)" />
             </g>
 
-            <!-- Right Waving Arm (Active 3D Motion) -->
-            <g class="robot-waving-arm-group">
-              <!-- Shoulder Joint -->
-              <circle cx="89" cy="74" r="5.5" fill="url(#purpleCore)"/>
-              <!-- Forearm -->
-              <path d="M89 74 Q97 60 102 48" stroke="url(#metalChassis)" stroke-width="8" stroke-linecap="round"/>
-              <path d="M89 74 Q97 60 102 48" stroke="#7C3AED" stroke-width="1" fill="none"/>
-              <!-- Waving Hand -->
-              <g class="robot-hand" transform="translate(102, 48)">
-                <circle cx="0" cy="0" r="5" fill="url(#purpleCore)"/>
-                <!-- Friendly Fingers -->
-                <path d="M-2 -3 L-2 -8" stroke="#22D3EE" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M1 -4 L1 -9" stroke="#22D3EE" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M4 -3 L4 -7" stroke="#22D3EE" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M-4 0 L-7 -3" stroke="#22D3EE" stroke-width="1.8" stroke-linecap="round"/>
-              </g>
-            </g>
+            <!-- Main White Chassis / Head with Integrated Cat-Ears -->
+            <path 
+              d="
+                M 80 27
+                C 93 27 101 16 107 16
+                C 113 16 117 22 116 32
+                C 119 42 133 54 133 78
+                C 133 108 109 123 80 123
+                C 51 123 27 108 27 78
+                C 27 54 41 42 44 32
+                C 43 22 47 16 53 16
+                C 59 16 67 27 80 27
+                Z
+              "
+              fill="url(#robotWhiteBody3D)"
+              stroke="rgba(148, 163, 184, 0.45)"
+              stroke-width="1.2"
+              class="robot-chassis-shell"
+            />
 
-            <!-- Neck Connector -->
-            <rect x="53" y="60" width="14" height="10" rx="3" fill="#4C1D95"/>
+            <!-- Forehead & Horn Specular Glints -->
+            <ellipse cx="53" cy="20" rx="3.5" ry="2.2" fill="url(#earHighlight)" transform="rotate(-20 53 20)" />
+            <ellipse cx="107" cy="20" rx="3.5" ry="2.2" fill="url(#earHighlight)" transform="rotate(20 107 20)" />
+            <path d="M 64 32 Q 80 29 96 32" stroke="rgba(255,255,255,0.85)" stroke-width="2.5" stroke-linecap="round" fill="none" />
 
-            <!-- 3D Robot Head -->
-            <g class="robot-head-group">
-              <!-- Left & Right Ear Pods with Cyan LEDs -->
-              <rect x="22" y="32" width="7" height="18" rx="3.5" fill="url(#purpleCore)"/>
-              <rect x="91" y="32" width="7" height="18" rx="3.5" fill="url(#purpleCore)"/>
-              <circle cx="25.5" cy="41" r="2" fill="#22D3EE" filter="url(#cyanNeonGlow)" class="robot-ear-light"/>
-              <circle cx="94.5" cy="41" r="2" fill="#22D3EE" filter="url(#cyanNeonGlow)" class="robot-ear-light"/>
+            <!-- Robot Face Assembly (Screen Visor + Eyes + Mouth) -->
+            <g class="robot-face-assembly">
+              <!-- Dark Screen Visor Bezel / Rim Frame -->
+              <rect 
+                x="42" 
+                y="40" 
+                width="76" 
+                height="64" 
+                rx="23" 
+                fill="url(#robotScreenRim)" 
+                stroke="#26282F" 
+                stroke-width="1.2"
+              />
 
-              <!-- Antennas with Flashing Beacon Beams -->
-              <path d="M42 22 L35 12" stroke="#7C3AED" stroke-width="2.2" stroke-linecap="round"/>
-              <circle cx="35" cy="12" r="3" fill="#22D3EE" filter="url(#cyanNeonGlow)" class="robot-beacon-light"/>
+              <!-- Glossy Black Screen Face -->
+              <rect 
+                x="44" 
+                y="42" 
+                width="72" 
+                height="60" 
+                rx="21" 
+                fill="url(#robotScreenVisor)" 
+                class="robot-screen-face"
+              />
 
-              <path d="M78 22 L85 12" stroke="#7C3AED" stroke-width="2.2" stroke-linecap="round"/>
-              <circle cx="85" cy="12" r="3" fill="#22D3EE" filter="url(#cyanNeonGlow)" class="robot-beacon-light"/>
+              <!-- Screen Top-Right Glass Specular Curve -->
+              <path 
+                d="M 90 47 Q 107 50 109 68" 
+                stroke="rgba(255,255,255,0.22)" 
+                stroke-width="2.2" 
+                stroke-linecap="round" 
+                fill="none" 
+              />
+              <ellipse cx="98" cy="52" rx="8" ry="4" fill="rgba(255,255,255,0.06)" transform="rotate(-15 98 52)" />
 
-              <!-- Outer 3D Metallic Head Shape -->
-              <rect x="28" y="18" width="64" height="46" rx="20" fill="url(#metalChassis)" stroke="#7C3AED" stroke-width="1.8"/>
-              <!-- Head Top Glint -->
-              <ellipse cx="60" cy="23" rx="20" ry="3.5" fill="url(#specularGlint)"/>
-
-              <!-- Glossy Dark Screen Visor -->
-              <rect x="34" y="24" width="52" height="34" rx="14" fill="url(#visorGlass)" stroke="#22D3EE" stroke-width="1.2"/>
-              <!-- Visor Corner Specular Reflection -->
-              <path d="M38 27 Q50 25 62 27" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-
-              <!-- 3D Blinking LED Digital Eyes -->
-              <g class="robot-digital-eyes">
-                <!-- Left Eye -->
-                <g class="robot-left-eye">
-                  <path d="M44 38 Q50 33 54 38" stroke="#22D3EE" stroke-width="3" stroke-linecap="round" fill="none" filter="url(#cyanNeonGlow)"/>
-                  <circle cx="49" cy="40" r="1" fill="#FFFFFF"/>
+              <!-- Digital Scanline Features (Blinking/Winking Eyes + Happy Mouth) -->
+              <g class="robot-face-features" filter="url(#screenPhosphorGlow)">
+                
+                <!-- Left Eye (Open Rounded Square with Scanlines & Natural Blink) -->
+                <g class="robot-eye-left-group">
+                  <!-- Phosphor Background Base for Rich Brightness -->
+                  <rect x="58" y="56" width="18" height="18" rx="4.5" fill="rgba(255, 255, 255, 0.45)" />
+                  <!-- LED Scanline Overlay -->
+                  <rect x="58" y="56" width="18" height="18" rx="4.5" fill="url(#digitalScanlines)" />
                 </g>
-                <!-- Right Eye -->
-                <g class="robot-right-eye">
-                  <path d="M66 38 Q70 33 76 38" stroke="#22D3EE" stroke-width="3" stroke-linecap="round" fill="none" filter="url(#cyanNeonGlow)"/>
-                  <circle cx="71" cy="40" r="1" fill="#FFFFFF"/>
+
+                <!-- Right Eye (Playful Winking Slit with Scanlines & Twinkle) -->
+                <g class="robot-eye-right-group">
+                  <!-- Phosphor Base -->
+                  <rect x="85" y="63" width="17" height="6.5" rx="3.2" fill="rgba(255, 255, 255, 0.45)" />
+                  <!-- LED Scanlines -->
+                  <rect x="85" y="63" width="17" height="6.5" rx="3.2" fill="url(#digitalScanlines)" />
                 </g>
+
+                <!-- Cute Smiling Mouth with Scanlines -->
+                <g class="robot-mouth-group">
+                  <path 
+                    d="M 71 83 C 71 83 75 90 80 90 C 85 90 89 83 89 83 Z" 
+                    fill="rgba(255, 255, 255, 0.35)" 
+                  />
+                  <path 
+                    d="M 71 83 C 71 83 75 90 80 90 C 85 90 89 83 89 83 Z" 
+                    fill="url(#digitalScanlines)" 
+                  />
+                </g>
+
               </g>
-
-              <!-- Happy Digital Smile -->
-              <path d="M54 47 Q60 52 66 47" stroke="#22D3EE" stroke-width="2.2" stroke-linecap="round" fill="none" filter="url(#cyanNeonGlow)"/>
-
-              <!-- Cute Rosy Cheek Accents -->
-              <circle cx="41" cy="47" r="2.2" fill="#F472B6" opacity="0.6"/>
-              <circle cx="79" cy="47" r="2.2" fill="#F472B6" opacity="0.6"/>
             </g>
           </g>
         </svg>

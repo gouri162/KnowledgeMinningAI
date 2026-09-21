@@ -27,22 +27,22 @@ export function renderDocumentsView(documents = [], isUploading = false) {
 
       <!-- Upload Dropzone -->
       <div class="docs-upload-dropzone ${isUploading ? 'uploading' : ''}" id="docs-tab-dropzone" role="button" tabindex="0">
-        <input type="file" id="docs-tab-file-input" accept=".pdf" style="display:none;" />
+        <input type="file" id="docs-tab-file-input" accept=".pdf,.png,.jpg,.jpeg,.webp" style="display:none;" />
         ${isUploading ? `
           <div class="upload-spinner-icon">⏳</div>
           <div style="font-weight:700;font-size:1.05rem;color:var(--color-brand-blue);margin-top:0.4rem;">
-            Uploading & Chunking PDF into Supabase...
+            Uploading & Extracting Document into Supabase...
           </div>
           <div style="font-size:0.8rem;color:var(--color-text-muted);margin-top:0.25rem;">
-            Generating vector embeddings with Azure OpenAI text-embedding-3-small
+            Extracting text with Azure OpenAI Vision & generating vector embeddings
           </div>
         ` : `
-          <div style="font-size:2.4rem;margin-bottom:0.4rem;">📄</div>
+          <div style="font-size:2.4rem;margin-bottom:0.4rem;">📁</div>
           <div style="font-weight:700;font-size:1.05rem;color:var(--color-text-main);">
-            Click or Drag & Drop business PDF to Index
+            Click or Drag & Drop PDF or Image to Index
           </div>
           <div style="font-size:0.8rem;color:var(--color-text-muted);margin-top:0.25rem;">
-            Financials, Market Research, Strategy Briefs, Contracts (Max 100MB)
+            PDF documents, PNG, JPG, WEBP images, timetables, certificates, notes
           </div>
         `}
       </div>
@@ -51,7 +51,7 @@ export function renderDocumentsView(documents = [], isUploading = false) {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem;">
         <div style="display:flex;align-items:center;gap:0.5rem;">
           <span style="font-weight:700;font-size:0.95rem;color:var(--color-text-main);">
-            Active Indexed Documents
+            Active Indexed Documents & Images
           </span>
           <span class="badge-count">${documents.length}</span>
         </div>
@@ -62,10 +62,12 @@ export function renderDocumentsView(documents = [], isUploading = false) {
 
       <!-- Documents Grid List -->
       <div class="docs-grid-list">
-        ${documents.length > 0 ? documents.map(d => `
+        ${documents.length > 0 ? documents.map(d => {
+          const isImg = d.type === 'image' || /\.(png|jpe?g|webp|bmp)$/i.test(d.name);
+          return `
           <div class="doc-grid-card">
             <div class="doc-card-main-info">
-              <span class="pdf-icon-badge">PDF</span>
+              <span class="${isImg ? 'img-icon-badge' : 'pdf-icon-badge'}">${isImg ? 'IMG' : 'PDF'}</span>
               <div class="doc-card-text">
                 <div class="doc-card-name" title="${d.name}">${d.name}</div>
                 <div class="doc-card-chunks">${d.chunks || 1} vector chunks indexed</div>
@@ -89,14 +91,14 @@ export function renderDocumentsView(documents = [], isUploading = false) {
               </button>
             </div>
           </div>
-        `).join('') : `
+        `}).join('') : `
           <div class="docs-empty-state">
             <div style="font-size:2rem;margin-bottom:0.5rem;">📂</div>
             <div style="font-weight:700;font-size:1rem;color:var(--color-text-main);margin-bottom:0.25rem;">
               No documents currently indexed
             </div>
             <p style="color:var(--color-text-muted);font-size:0.84rem;max-width:380px;margin:0 auto 1rem auto;">
-              Upload your first PDF document above. It will be parsed and embedded in Supabase vector store for live AI search and consultation.
+              Upload your first PDF or image document above. It will be parsed and embedded in Supabase vector store for live AI search and consultation.
             </p>
           </div>
         `}

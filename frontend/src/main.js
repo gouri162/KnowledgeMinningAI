@@ -144,13 +144,15 @@ function closeDocumentViewer() {
   renderApp();
 }
 
-// ── UPLOAD PDF HANDLER (FOR DROPZONE AND CHAT ATTACH) ──
+// ── UPLOAD DOCUMENT / IMAGE HANDLER (FOR DROPZONE AND CHAT ATTACH) ──
 async function handlePdfUpload(file) {
   if (!file) return;
-  if (!file.name.toLowerCase().endsWith('.pdf')) {
+  const validExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.webp', '.bmp'];
+  const hasValidExt = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+  if (!hasValidExt) {
     showToast({
       title: 'Invalid File Format',
-      message: 'Only PDF documents are supported for knowledge base indexing.',
+      message: 'Supported formats are PDF documents and images (PNG, JPG, JPEG, WEBP).',
       type: 'warning'
     });
     return;

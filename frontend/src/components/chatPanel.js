@@ -97,8 +97,8 @@ export function renderChatPanel(messages, isStreaming = false) {
       <!-- Bottom Dock: Input Pill + Suggestion Chips -->
       <div class="chat-bottom-dock">
         <div class="input-pill-wrapper">
-          <input type="file" id="pdf-file-picker" accept=".pdf" style="display: none;" />
-          <button class="btn-input-attach" id="btn-attach-doc" title="Attach PDF document">
+          <input type="file" id="pdf-file-picker" accept=".pdf,.png,.jpg,.jpeg,.webp" style="display: none;" />
+          <button class="btn-input-attach" id="btn-attach-doc" title="Attach PDF or Image (PNG, JPG, WEBP)">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
             </svg>
@@ -108,7 +108,7 @@ export function renderChatPanel(messages, isStreaming = false) {
             type="text" 
             class="chat-text-input" 
             id="chat-user-input" 
-            placeholder="Ask a question or upload a document..." 
+            placeholder="Ask a question or upload a PDF/image..." 
             autocomplete="off"
           />
           
@@ -218,29 +218,6 @@ function renderMessageRow(msg, idx) {
               <span class="section-label-title">Explanation</span>
             </div>
             <div class="explanation-text">${renderMarkdown(explanation)}</div>
-          </div>
-        ` : ''}
-
-        <!-- Section 3: Sources -->
-        ${sources && sources.length > 0 ? `
-          <div class="source-section-row">
-            <span class="source-label-text">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
-              <span>Source</span>
-            </span>
-            ${sources.map(s => `
-              <button class="source-pill-btn btn-view-doc" data-doc-name="${s.name || s}" title="View document">
-                <span>${s.name || s}</span>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                  <polyline points="15 3 21 3 21 9"></polyline>
-                  <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
-              </button>
-            `).join('')}
           </div>
         ` : ''}
 

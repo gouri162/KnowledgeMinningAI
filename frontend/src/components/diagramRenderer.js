@@ -1,4 +1,5 @@
 import mermaid from 'mermaid';
+import { generateWorkflowPngDataUrl, parseWorkflowDataFromText } from './workflowInfographic.js';
 
 // Initialize Mermaid with clean, modern executive theme and pure SVG text for crisp rendering
 mermaid.initialize({
@@ -129,88 +130,11 @@ export function buildMermaidContainerHtml(rawCode) {
       <div class="workflow-image-placeholder" data-mermaid="${encoded}">
         <div class="workflow-generating-indicator">
           <div class="workflow-spinner"></div>
-          <span>Generating workflow image…</span>
+          <span>Generating visual workflow image…</span>
         </div>
       </div>
     </div>
   `;
-}
-
-/**
- * Converts Mermaid SVG into a crisp high-res PNG image data URL
- */
-async function svgToPngDataUrl(svgString, minWidth = 720) {
-  return new Promise((resolve) => {
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(svgString, 'image/svg+xml');
-      const svg = doc.querySelector('svg');
-      if (!svg) {
-        resolve(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`);
-        return;
-      }
-
-      svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-      let w = 700;
-      let h = 420;
-      const viewBox = svg.getAttribute('viewBox');
-      if (viewBox) {
-        const parts = viewBox.split(/[\s,]+/).map(Number);
-        if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
-          w = parts[2];
-          h = parts[3];
-        }
-      }
-
-      const pad = 36;
-      const totalW = Math.max(Math.ceil(w + pad * 2), minWidth);
-      const totalH = Math.ceil(h + pad * 2);
-      svg.setAttribute('width', totalW);
-      svg.setAttribute('height', totalH);
-
-      const xml = new XMLSerializer().serializeToString(svg);
-      const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(xml)}`;
-
-      const img = new Image();
-      const timer = setTimeout(() => {
-        // Safe fallback: SVG Data URL is also a valid image format
-        resolve(svgDataUrl);
-      }, 1500);
-
-      img.onload = () => {
-        clearTimeout(timer);
-        try {
-          const canvas = document.createElement('canvas');
-          const scale = 2; // 2x retina crisp quality
-          canvas.width = totalW * scale;
-          canvas.height = totalH * scale;
-          const ctx = canvas.getContext('2d');
-
-          // Clean white high-res background
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // Draw the diagram centered
-          const offsetX = ((totalW - w) / 2) * scale;
-          const offsetY = pad * scale;
-          ctx.drawImage(img, offsetX, offsetY, w * scale, h * scale);
-
-          resolve(canvas.toDataURL('image/png'));
-        } catch {
-          resolve(svgDataUrl);
-        }
-      };
-
-      img.onerror = () => {
-        clearTimeout(timer);
-        resolve(svgDataUrl);
-      };
-
-      img.src = svgDataUrl;
-    } catch {
-      resolve(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`);
-    }
-  });
 }
 
 /**
@@ -222,10 +146,9 @@ export async function renderAllDiagrams(scope = document) {
     const rawCode = decodeURIComponent(el.getAttribute('data-mermaid') || '');
     if (!rawCode.trim()) continue;
 
-    const renderId = `wf_svg_${Date.now()}_${++diagramCounter}`;
     try {
-      const { svg } = await mermaid.render(renderId, rawCode.trim());
-      const imageUrl = await svgToPngDataUrl(svg);
+      const data = parseWorkflowDataFromText(rawCode);
+      const imageUrl = await generateWorkflowPngDataUrl(data);
 
       el.setAttribute('data-rendered', 'true');
       el.innerHTML = `
@@ -237,16 +160,16 @@ export async function renderAllDiagrams(scope = document) {
                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                 <polyline points="21 15 16 10 5 21"></polyline>
               </svg>
-              <span>Workflow Diagram (Image Format)</span>
+              <span>${data.title} (Workflow Image)</span>
             </div>
             <div class="workflow-header-actions">
-              <a href="${imageUrl}" download="consultai-workflow-${Date.now()}.png" class="btn-workflow-action" title="Download Image">
+              <a href="${imageUrl}" download="${(data.title || 'study-workflow').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png" class="btn-workflow-action" title="Download Image">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="7 10 12 15 17 10"></polyline>
                   <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
-                <span>Download PNG</span>
+                <span>Download Image</span>
               </a>
               <button class="btn-workflow-action btn-expand-img" data-img-src="${encodeURIComponent(imageUrl)}" title="View Fullscreen">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -262,9 +185,9 @@ export async function renderAllDiagrams(scope = document) {
           <div class="workflow-img-container">
             <img 
               src="${imageUrl}" 
-              alt="Workflow Diagram" 
+              alt="${data.title}" 
               class="workflow-image-element" 
-              title="Click to view full image"
+              title="Click to view in high-resolution"
             />
           </div>
         </div>

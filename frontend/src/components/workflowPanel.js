@@ -22,7 +22,7 @@ export function renderWorkflowPanel(workflowState, referencedDocs, allDocsCount 
           ${docs.length > 0 ? docs.map(doc => `
             <div class="referenced-doc-row">
               <div class="ref-doc-left">
-                <div class="pdf-icon-badge">PDF</div>
+                <div class="${(doc.type === 'image' || /\.(png|jpe?g|webp|bmp)$/i.test(doc.name)) ? 'img-icon-badge' : 'pdf-icon-badge'}">${(doc.type === 'image' || /\.(png|jpe?g|webp|bmp)$/i.test(doc.name)) ? 'IMG' : 'PDF'}</div>
                 <div class="ref-doc-info">
                   <span class="ref-doc-filename" title="${doc.name}">${doc.name}</span>
                   <span class="ref-doc-usage">${doc.description || 'Used for answer generation'}</span>
